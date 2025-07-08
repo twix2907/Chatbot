@@ -1,0 +1,57 @@
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Google Cloud Credentials
+*.json
+!.env.example
+credenciales_base64.txt
+panaderiajosymar-*.json
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Google Cloud credentials (si los usas)
+credentials.json
+service-account-key.json
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

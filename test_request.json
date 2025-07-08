@@ -1,0 +1,30 @@
+{
+  "queryResult": {
+    "queryText": "Quiero 2 francés, 1 torta de chocolate y 3 empanaditas de pollo",
+    "intent": {
+      "displayName": "realizar_pedido"
+    },
+    "parameters": {
+      "productos": [
+        {
+          "cantidad": "2",
+          "nombre": "francés"
+        },
+        {
+          "cantidad": "1", 
+          "nombre": "torta de chocolate"
+        },
+        {
+          "cantidad": "3",
+          "nombre": "empanaditas de pollo"
+        }
+      ]
+    }
+  },
+  "originalDetectIntentRequest": {
+    "source": "whatsapp",
+    "payload": {
+      "from": "+51987654321"
+    }
+  }
+}
