@@ -205,7 +205,8 @@ def detectar_intent_dialogflow(texto, telefono, idioma='es'):
             'parametros': dict(response.query_result.parameters),
             'mensaje_usuario': response.query_result.query_text,
             'confianza': response.query_result.intent_detection_confidence,
-            'fuente': 'dialogflow'
+            'fuente': 'dialogflow',
+            'fulfillment_text': response.query_result.fulfillment_text
         }
         
     except Exception as e:
@@ -221,7 +222,6 @@ def procesar_mensaje_hibrido(mensaje_texto, telefono):
         
         if resultado_df and resultado_df['confianza'] > 0.7:
             print(f"[INFO] Usando respuesta de Dialogflow (confianza: {resultado_df['confianza']:.2f})")
-            
             # Convertir parámetros de Dialogflow a formato local
             datos = {
                 'intent': mapear_intent_dialogflow(resultado_df['intent']),
@@ -229,9 +229,9 @@ def procesar_mensaje_hibrido(mensaje_texto, telefono):
                 'mensaje_usuario': mensaje_texto,
                 'telefono_whatsapp': telefono,
                 'fuente': 'dialogflow',
-                'confianza': resultado_df['confianza']
+                'confianza': resultado_df['confianza'],
+                'fulfillment_text': resultado_df.get('fulfillment_text', '')
             }
-            
             # Si es un pedido y Dialogflow extrajo entidades, usarlas
             if datos['intent'] == 'realizar_pedido':
                 productos_df = extraer_productos_dialogflow(resultado_df['parametros'])
@@ -241,7 +241,6 @@ def procesar_mensaje_hibrido(mensaje_texto, telefono):
                     # Fallback a extracción local
                     productos_locales = extraer_productos_del_texto(mensaje_texto)
                     datos['parametros']['productos'] = productos_locales
-            
             return datos
         else:
             print("[INFO] Confianza baja en Dialogflow, usando procesamiento local")
@@ -808,10 +807,13 @@ def webhook():
             if datos.get('parametros', {}).get('productos'):
                 print(f"[INFO] Productos extraídos: {datos['parametros']['productos']}")
             
-            # Procesar el intent
-            respuesta = procesar_intent(datos['intent'], datos)
-            print(f"[INFO] Respuesta: {respuesta[:100]}...")
-            
+            # Si la fuente es dialogflow y hay fulfillment_text, usarlo como respuesta
+            if datos.get('fuente') == 'dialogflow' and datos.get('fulfillment_text'):
+                respuesta = datos['fulfillment_text']
+                print(f"[INFO] Respuesta (Dialogflow fulfillment): {respuesta[:100]}...")
+            else:
+                respuesta = procesar_intent(datos['intent'], datos)
+                print(f"[INFO] Respuesta: {respuesta[:100]}...")
             # Respuesta en formato TwiML para Twilio
             return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
