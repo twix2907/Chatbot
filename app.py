@@ -1,11 +1,12 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from database import DatabaseManager
 from dotenv import load_dotenv
 from datetime import datetime
 import re
 import base64
 import tempfile
+import html
 
 # Importaciones para Dialogflow
 try:
@@ -778,6 +779,14 @@ def obtener_o_crear_cliente(telefono):
     
     return None
 
+def escape_xml(text):
+    """Escapa caracteres especiales para XML (TwiML)."""
+    if not isinstance(text, str):
+        text = str(text)
+    # Escapa &, <, >, ", '
+    text = html.escape(text, quote=True)
+    return text
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     """Endpoint principal del webhook para Dialogflow/WhatsApp/Twilio (VERSIÓN HÍBRIDA)"""
@@ -814,11 +823,10 @@ def webhook():
             else:
                 respuesta = procesar_intent(datos['intent'], datos)
                 print(f"[INFO] Respuesta: {respuesta[:100]}...")
-            # Respuesta en formato TwiML para Twilio
-            return f"""<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Message>{respuesta}</Message>
-</Response>""", 200, {'Content-Type': 'application/xml'}
+            # Escapar respuesta para XML
+            respuesta_xml = escape_xml(respuesta)
+            twiml = f'''<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n    <Message>{respuesta_xml}</Message>\n</Response>'''
+            return Response(twiml, status=200, mimetype='application/xml; charset=utf-8')
         
         else:
             # Es un request JSON de Dialogflow
